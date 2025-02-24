@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.</title>
+    <style>
+        body { background: black; color: green; font-family: monospace; }
+        #hackingText { white-space: pre-wrap; }
+    </style>
+    <script>
+        const text = [
+            "Инициализация взлома...",
+            "Сканирование IP-адресов...",
+            "Подключение к серверу...",
+            "Доступ получен!",
+            "Загрузка данных..."
+        ];
+        let index = 0;
+        function showHacking() {
+            if (index < text.length) {
+                document.getElementById("hackingText").innerText += text[index] + "\n";
+                index++;
+                setTimeout(showHacking, 1000);
+            } else {
+                alert("Внимание! Вы взломаны!");
+            }
+        }
+        window.onload = showHacking;
+    </script>
+</head>
+<body>
+    <h1 id="hackingText"></h1>
+</body>
+</html>
